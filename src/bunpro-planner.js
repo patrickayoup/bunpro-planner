@@ -65,13 +65,16 @@ function generateChartLabels() {
 function getReviewsPerHour(reviews, labels) {
     let now = moment();
     let thisHour = now.hour();
+    let thisDate = now.date();
 
-    // Filter for cards scheduled in the next 24 hours.
+    // Filter for cards scheduled in the next day.
     let filteredReviews = _.filter(reviews, function (card) {
-        return moment(card.nextReview).diff(now, 'hours') <= 24;
+        return moment(card.nextReview).diff(now, 'hours') < 23;
     });
     let groups = _.groupBy(filteredReviews, function (card) {
-        return moment(card.nextReview).hour();
+        let reviewTime = moment(card.nextReview);
+
+        return reviewTime.hour();
     });
 
     return _.map(labels, function(hour) {
@@ -155,6 +158,9 @@ function buildChart(chart, reviews) {
                         beginAtZero:true
                     }
                 }]
+            },
+            legend: {
+                display: false
             }
         }
     });
