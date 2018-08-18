@@ -2,15 +2,8 @@
   "name": "bunpro-planner",
   "version": "1.0.0",
   "description": "Userscript for a better visualization of upcoming Bunpro Reviews",
-  "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "^3.0.1"
-  },
-  "scripts": {
-    "build": "node_modules/.bin/tsc",
-    "test": "npm test"
-  },
+  "private": true,
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/patrickayoup/bunpro-planner.git"
