@@ -6,11 +6,11 @@
 // @author Patrick Ayoup
 // @include *bunpro.jp/users*
 // @grant none
-// @run-at document-end
 // @require https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js
+// @require https://greasyfork.org/scripts/5392-waitforkeyelements/code/WaitForKeyElements.js?version=115012
 // ==/UserScript==
 (()=> {
 $.noConflict();
@@ -166,7 +166,10 @@ function buildChart(chart, reviews) {
     });
 }
 
-let reviews = getReviews();
-let chart = insertChartNode();
-buildChart(chart, reviews);
+waitForKeyElements('div .show-upcoming-grammar', function() {
+    let reviews = getReviews();
+    let chart = insertChartNode();
+    buildChart(chart, reviews);
+});
 })();
+    
