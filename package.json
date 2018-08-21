@@ -1,6 +1,6 @@
 {
   "name": "bunpro-planner",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Userscript for a better visualization of upcoming Bunpro Reviews",
   "private": true,
   "scripts": {},
