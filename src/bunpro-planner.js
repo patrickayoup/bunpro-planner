@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name bunpro-planner
 // @namespace http://patrickayoup.com/
-// @version 1.0.2
+// @version 1.0.3
 // @description  Better visualization of upcoming Bunpro Reviews
 // @author Patrick Ayoup
 // @include *bunpro.jp*
