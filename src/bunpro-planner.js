@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name bunpro-planner
 // @namespace http://patrickayoup.com/
-// @version 1.0.2
+// @version 1.0.3
 // @description  Better visualization of upcoming Bunpro Reviews
 // @author Patrick Ayoup
 // @include *bunpro.jp*
+// @exclude *community.bunpro.jp*
 // @grant none
 // @require https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js
@@ -172,4 +173,3 @@ waitForKeyElements('div .show-upcoming-grammar', function() {
     buildChart(chart, reviews);
 });
 })();
-    
