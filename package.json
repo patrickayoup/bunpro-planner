@@ -3,7 +3,10 @@
   "version": "1.0.3",
   "description": "Userscript for a better visualization of upcoming Bunpro Reviews",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "test": "karma start --single-run",
+    "test-watch": "karma start"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/patrickayoup/bunpro-planner.git"
@@ -18,5 +21,13 @@
   "bugs": {
     "url": "https://github.com/patrickayoup/bunpro-planner/issues"
   },
-  "homepage": "https://github.com/patrickayoup/bunpro-planner#readme"
+  "homepage": "https://github.com/patrickayoup/bunpro-planner#readme",
+  "main": "src/bunpro-planner.js",
+  "devDependencies": {
+    "jasmine-core": "^3.3.0",
+    "karma": "^3.1.4",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-jasmine": "^2.0.1"
+  }
 }
