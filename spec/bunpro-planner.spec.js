@@ -84,7 +84,7 @@ describe('bunpro-planner', function () {
             actual = bunproPlanner.getCurrentHour();
             expect(actual).toEqual(expected);
         });
-    })
+    });
 
     describe('generateChartLabels', function () {
         it('should generate chart labels for each hour for the next 24 hours', function () {
@@ -144,9 +144,9 @@ describe('bunpro-planner', function () {
             const dataObj = Chart.calls.argsFor(0)[1];
             expect(dataObj.type).toEqual('bar');
             expect(dataObj.data.labels).toEqual(labels);
-            expect(dataObj.data.datasets[0])
-            expect(dataObj.data.datasets[0].label).toEqual('Reviews')
-            expect(dataObj.data.datasets[0].data).toEqual(reviewsPerHour)
+            expect(dataObj.data.datasets[0]);
+            expect(dataObj.data.datasets[0].label).toEqual('Reviews');
+            expect(dataObj.data.datasets[0].data).toEqual(reviewsPerHour);
         });
     });
 });

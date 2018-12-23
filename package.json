@@ -4,6 +4,7 @@
   "description": "Userscript for a better visualization of upcoming Bunpro Reviews",
   "private": true,
   "scripts": {
+    "lint": "node_modules/.bin/jshint src spec",
     "test": "karma start --single-run",
     "test-watch": "karma start"
   },
@@ -25,6 +26,7 @@
   "main": "src/bunpro-planner.js",
   "devDependencies": {
     "jasmine-core": "^3.3.0",
+    "jshint": "^2.9.7",
     "karma": "^3.1.4",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.2",
