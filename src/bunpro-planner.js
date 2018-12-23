@@ -21,9 +21,12 @@ const bunproPlanner = {
         if (relativeTime === 'now') {
             absoluteTime = moment();
         } else {
-            let tokens = relativeTime.split(" ");
-            let value = tokens[0];
-            let unit = tokens[1];
+            let tokens = relativeTime.split(' ');
+            // When bunpro "burns" items, it uses the string
+            // "almost 20 years", we want to get the last 2 tokens
+            // which will cover both cases.
+            let value = tokens[tokens.length - 2];
+            let unit = tokens[tokens.length - 1];
             absoluteTime = moment().add(parseInt(value), unit);
         }
     
