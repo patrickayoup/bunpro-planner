@@ -27,6 +27,8 @@
     "jasmine-core": "^3.3.0",
     "karma": "^3.1.4",
     "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage": "^1.1.2",
+    "karma-coveralls": "^2.1.0",
     "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "^2.0.1"
   }
