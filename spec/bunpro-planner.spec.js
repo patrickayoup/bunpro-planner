@@ -122,6 +122,17 @@ describe('bunpro-planner', function () {
         });
     });
 
+    describe('getAccumulatedReviewsPerHour', function () {
+        it('should accumulate the number of reviews up until each hour if not done', function () {
+            const reviews = [1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            
+            const expected = [1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4];            
+            const actual = bunproPlanner.getAccumulatedReviewsPerHour(reviews);
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
     describe('buildChart', function () {
         it('should build a chart to visualize review scheduling', function () {
             spyOn(window, 'Chart');
@@ -138,15 +149,21 @@ describe('bunpro-planner', function () {
             ];
             const labels = bunproPlanner.generateChartLabels();
             const reviewsPerHour = bunproPlanner.getReviewsPerHour(reviews, labels);
+            const accumulatedReviewsPerHour = bunproPlanner.getAccumulatedReviewsPerHour(reviewsPerHour);
 
             bunproPlanner.buildChart(chart, reviews);
             
             const dataObj = Chart.calls.argsFor(0)[1];
             expect(dataObj.type).toEqual('bar');
             expect(dataObj.data.labels).toEqual(labels);
-            expect(dataObj.data.datasets[0]);
+            
+            expect(dataObj.data.datasets[0]).toBeDefined();
             expect(dataObj.data.datasets[0].label).toEqual('Reviews');
             expect(dataObj.data.datasets[0].data).toEqual(reviewsPerHour);
+
+            expect(dataObj.data.datasets[1]).toBeDefined();
+            expect(dataObj.data.datasets[1].label).toEqual('Accumulated Reviews');
+            expect(dataObj.data.datasets[1].data).toEqual(accumulatedReviewsPerHour);
         });
     });
 });
