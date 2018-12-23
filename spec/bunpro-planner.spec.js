@@ -11,6 +11,12 @@ describe('bunpro-planner', function () {
             const actual = bunproPlanner.toAbsoluteTime('2 days');
             expect(actual).toEqual(expected);
         });
+
+        it('should convert pseudo-burned reviews with a relative time in the distant future into the absolute time', function () {
+            const expected = moment().add(20, 'years').format();
+            const actual = bunproPlanner.toAbsoluteTime('almost 20 years');
+            expect(actual).toEqual(expected);
+        });
     });
 
     describe('getReviews', function () {
