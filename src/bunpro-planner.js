@@ -75,7 +75,7 @@ const bunproPlanner = {
         let now = moment();
     
         // Filter for cards scheduled in the next day.
-        let filteredReviews = _.filter(reviews, function (card) {
+        let filteredReviews = reviews.filter(function (card) {
             return moment(card.nextReview).diff(now, 'hours') < 23;
         });
 
@@ -85,7 +85,7 @@ const bunproPlanner = {
             return reviewTime.hour();
         });
     
-        return _.map(labels, function(hour) {
+        return labels.map(function(hour) {
             if (groups[hour]) {
                 return groups[hour].length;
             } else {
