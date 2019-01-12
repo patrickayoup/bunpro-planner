@@ -4,7 +4,7 @@
 // @version 1.0.5
 // @description  Better visualization of upcoming Bunpro Reviews
 // @author Patrick Ayoup
-// @include *bunpro.jp/users*
+// @include *bunpro.jp/*
 // @exclude *community.bunpro.jp*
 // @grant none
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js
@@ -201,7 +201,7 @@ const bunproPlanner = {
     }
 };
 
-waitForKeyElements('div .show-upcoming-grammar', function() {
+waitForKeyElements('div.show-upcoming-grammar', function() {
     let reviews = bunproPlanner.getReviews();
     let chart = bunproPlanner.insertChartNode();
     bunproPlanner.buildChart(chart, reviews);
