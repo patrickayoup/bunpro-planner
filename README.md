@@ -17,7 +17,7 @@ To run the tests:
 
     $ npm test
 
-When developing, you can also set the runner to watch for changes and re-run tests:
+When developing, you can also use the dev config to debug, watch for changes and re-run tests:
 
-    $ npm run test-watch
+    $ npm run test-dev
 
