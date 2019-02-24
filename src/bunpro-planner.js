@@ -13,8 +13,11 @@
 // @require https://greasyfork.org/scripts/5392-waitforkeyelements/code/WaitForKeyElements.js?version=115012
 // ==/UserScript==
 
-const bunproPlanner = {
-    toAbsoluteTime: function (relativeTime) {
+const BunproPlanner = function () {
+    this.interval = 1;
+    this.chart = null;
+
+    this.toAbsoluteTime = function (relativeTime) {
         let absoluteTime = null;
         relativeTime = relativeTime.toLowerCase();
         if (relativeTime === 'now') {
@@ -30,9 +33,9 @@ const bunproPlanner = {
         }
     
         return absoluteTime.format();
-    },
+    };
 
-    getReviews: function () {
+    this.getReviews = function () {
         const self = this;
         let cards = jQuery('div .srs-info .row');
         const reviews = cards.map(function () {
@@ -46,75 +49,118 @@ const bunproPlanner = {
             return rv;
         });
 
-        return reviews.get();
-    },
+        this.reviews = reviews.get();
+    };
 
-    insertChartNode: function () {
+    this.insertChartNode = function () {
+        const self = this;
+
+        // Delete the existing chart if there is one.
+        const oldContainer = $('#bunpro-planner-chart-container').first().remove();
+
         let showUpcomingGrammarButton = jQuery('div.show-upcoming-grammar').first();
+        
         let container = jQuery('<div id="bunpro-planner-chart-container"></div>');
+        let intervalSelector = jQuery(`
+            <select id="bunpro-planner-interval">
+                <option value="8">8 Hours</option>
+                <option value="4">4 Hours</option>
+                <option value="2">2 Hours</option>
+                <option value="1">1 Hour</option>
+                <option value="0.5">30 Minutes</option>
+                <option value="0.25">15 Minutes</option>
+            </select>
+        `);
+
+        intervalSelector.change(function () {
+            self.interval = Number($('#bunpro-planner-interval').children("option:selected").val());
+            self.insertChartNode();
+            self.buildChart();
+        });
+
         let chart = jQuery('<canvas id="bunpro-planner-chart"></canvas>');
+        container.append(intervalSelector);
         container.append(chart);
         container.insertBefore(showUpcomingGrammarButton);
-        return chart;
-    },
 
-    getCurrentHour: function () {
-        return moment().hour();
-    },
+        $('#bunpro-planner-interval').val(this.interval);
 
-    generateChartLabels: function () {
-        let thisHour = this.getCurrentHour();
-        let hours = [];
-        for (i = thisHour; i < thisHour + 24; ++i) {
-            hours.push(i % 24);
+        this.chart = chart;
+    };
+
+    this.generateIntervals = function (startAt) {
+        startAt = startAt.startOf('hour');
+        let intervals = [];
+        let totalIntervals = 24;
+        for (i = 0; i < totalIntervals; ++i) {
+            intervals.push(startAt.clone().add(i * this.interval, 'hours'));
         }
-        return hours;
-    },
 
-    getReviewsPerHour: function (reviews, labels) {
-        let now = moment();
+        return intervals;
+    };
+
+    this.getReviewsPerInterval = function (intervals) {
+        let now = moment().startOf('hour');
+        let maxTimestamp = now.clone().add(24 * this.interval, 'hours');
+        let maxDiff = maxTimestamp.diff(now, 'hours');
     
-        // Filter for cards scheduled in the next day.
-        let filteredReviews = reviews.filter(function (card) {
-            return moment(card.nextReview).diff(now, 'hours') < 23;
+        // Filter for cards scheduled outside the displayed range.
+        let filteredReviews = this.reviews.filter(function (card) {
+            return moment(card.nextReview).diff(now, 'hours') <= maxDiff;
         });
 
-        let groups = _.groupBy(filteredReviews, function (card) {
-            let reviewTime = moment(card.nextReview);
-    
-            return reviewTime.hour();
+        let groups = _.groupBy(filteredReviews, (card) => {
+            const reviewTime =  moment(card.nextReview);
+
+            for (i = 0; i < intervals.length; ++i) {
+                if (intervals[i] > reviewTime) {
+                    if (i > 0) {
+                        return intervals[i - 1];
+                    } else {
+                        return intervals[0];
+                    }
+                }
+            }
+
+            return intervals[intervals.length - 1];
         });
     
-        return labels.map(function(hour) {
-            if (groups[hour]) {
-                return groups[hour].length;
+        return intervals.map(function(interval) {
+            if (groups[interval]) {
+                return groups[interval].length;
             } else {
                 return 0;
             }
         });
-    },
+    };
 
-    getAccumulatedReviewsPerHour: function (reviewsPerHour) {
+    this.getAccumulatedReviewsPerInterval = function (reviewsPerInterval) {
         const accumulatedReviews = [];
 
-        for (i = 0; i < reviewsPerHour.length; ++i) {
+        for (i = 0; i < reviewsPerInterval.length; ++i) {
             let sum = 0;
 
             for (j = 0; j <= i; ++j) {
-                sum += reviewsPerHour[j];
+                sum += reviewsPerInterval[j];
             }
 
             accumulatedReviews.push(sum);
         }
         
         return accumulatedReviews;
-    },
+    };
 
-    buildChart: function (chart, reviews) {
-        var ctx = chart.get(0).getContext('2d');
-        let labels = this.generateChartLabels();
-        const reviewsPerHour = this.getReviewsPerHour(reviews, labels);
-        const accumulatedReviewsPerHour = this.getAccumulatedReviewsPerHour(reviewsPerHour);
+    this.buildChart = function () {
+        const now = moment();
+        var ctx = this.chart.get(0).getContext('2d');
+        
+        let intervals = this.generateIntervals(now);
+        const reviewsPerInterval = this.getReviewsPerInterval(intervals);
+        const accumulatedReviewsPerInterval = this.getAccumulatedReviewsPerInterval(reviewsPerInterval);
+
+        const labels = intervals.map((interval) => {
+            return interval.format('MM/DD HH:mm');
+        });
 
         new Chart(ctx, {
             type: 'bar',
@@ -123,14 +169,14 @@ const bunproPlanner = {
                 datasets: [
                     {
                         label: 'Reviews',
-                        data: reviewsPerHour,
+                        data: reviewsPerInterval,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255,99,132,1)',
                         borderWidth: 1
                     },
                     {
                         label: 'Accumulated Reviews',
-                        data: accumulatedReviewsPerHour,
+                        data: accumulatedReviewsPerInterval,
                         type: 'line'
                     }
                 ]
@@ -148,11 +194,13 @@ const bunproPlanner = {
                 }
             }
         });
-    }
+    };
+
+    this.getReviews();
 };
 
 waitForKeyElements('div.show-upcoming-grammar', function() {
-    let reviews = bunproPlanner.getReviews();
-    let chart = bunproPlanner.insertChartNode();
-    bunproPlanner.buildChart(chart, reviews);
+    const bunproPlanner = new BunproPlanner();
+    bunproPlanner.insertChartNode();
+    bunproPlanner.buildChart();
 });

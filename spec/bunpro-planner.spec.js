@@ -1,25 +1,43 @@
-describe('bunpro-planner', function () {
-    describe('toAbsoluteTime', function() {
-        it('should convert the string now into the current time in absolute time', function () {
+let customMatchers = {
+    toEqualMoment: (util, customEqualityTesters) => {
+        return {
+            compare: (actual, expected) => {
+                var result = {};
+                result.pass = actual.isSame(expected);
+                return result;
+            }
+        };
+    }
+};
+
+describe('bunpro-planner', () => {
+    let bunproPlanner;
+
+    beforeEach(() => {
+        bunproPlanner = new BunproPlanner();
+    });
+
+    describe('toAbsoluteTime', () => {
+        it('should convert the string now into the current time in absolute time', () => {
             const expected = moment().format();
             const actual = bunproPlanner.toAbsoluteTime('Now');
             expect(actual).toEqual(expected);
         });
 
-        it('should convert a relative time string into the absolute time', function () {
+        it('should convert a relative time string into the absolute time', () => {
             const expected = moment().add(2, 'days').format();
             const actual = bunproPlanner.toAbsoluteTime('2 days');
             expect(actual).toEqual(expected);
         });
 
-        it('should convert pseudo-burned reviews with a relative time in the distant future into the absolute time', function () {
+        it('should convert pseudo-burned reviews with a relative time in the distant future into the absolute time', () => {
             const expected = moment().add(20, 'years').format();
             const actual = bunproPlanner.toAbsoluteTime('almost 20 years');
             expect(actual).toEqual(expected);
         });
     });
 
-    describe('getReviews', function () {
+    describe('getReviews',  () => {
         function generateReview(nextReview, timesCorrect) {
             return $(`<div class="col-xs-6 col-md-3 col-lg-3 no-padding">
                 <div class="row profile-study-question no-padding">
@@ -40,7 +58,7 @@ describe('bunpro-planner', function () {
             </div>`);
         }
 
-        it('should collect and process reviews from the page', function () {
+        it('should collect and process reviews from the page',  () => {
             const expected = [
                 { timesCorrect: 0, nextReview: moment().format() },
                 { timesCorrect: 5, nextReview: moment().add(2, 'days').format() },
@@ -55,14 +73,15 @@ describe('bunpro-planner', function () {
             const body = $('body');
             body.append(reviews);
 
-            actual = bunproPlanner.getReviews();
+            bunproPlanner.getReviews();
+            actual = bunproPlanner.reviews;
 
             expect(actual).toEqual(expected);
         });
     });
 
-    describe('insertChartNode', function () {
-        it('should insert the chart above the show-upcoming-grammar button', function () {            
+    describe('insertChartNode',  () => {
+        it('should insert the chart above the show-upcoming-grammar button',  () => {            
             const body = $('body');
             body.append($('<div>header stuff</div>'));
             body.append($('<div class="show-upcoming-grammar btn btn-primary update-button">+ Show Upcoming Grammar</div>'));
@@ -71,32 +90,235 @@ describe('bunpro-planner', function () {
             bunproPlanner.insertChartNode();
 
             const upcomingGrammarButton = $('.show-upcoming-grammar').first();
-            const previousNode = upcomingGrammarButton.first().prev();
+            const containerNode = upcomingGrammarButton.first().prev();
+            const intervalNode = containerNode.children().first();
+            const chartNode = intervalNode.next();
 
-            expect(previousNode.attr('id')).toEqual('bunpro-planner-chart-container');
-            expect(previousNode.children().first().attr('id')).toEqual('bunpro-planner-chart');
+            expect(containerNode.attr('id')).toEqual('bunpro-planner-chart-container');
+            expect(intervalNode.attr('id')).toEqual('bunpro-planner-interval');
+            expect(chartNode.attr('id')).toEqual('bunpro-planner-chart');
         });
     });
 
-    describe('getCurrentHour', function () {
-        it('should get the current hour', function () {
-            const expected = moment().hour();
-            actual = bunproPlanner.getCurrentHour();
-            expect(actual).toEqual(expected);
+    describe('generateIntervals',  () => {
+        let startAt;
+
+        beforeEach(() => {
+            startAt = moment([2019, 0, 15, 13, 0]);
+            jasmine.addMatchers(customMatchers);
+        });
+
+        describe('when interval is set to 4 hours', () => {
+            beforeEach(() => {
+                bunproPlanner.interval = 4;
+            });
+
+            it('should generate chart intervals for every 4 hours for 24 intervals', () => {
+                const expected = [
+                    moment([2019, 0, 15, 13, 0]),
+                    moment([2019, 0, 15, 17, 0]),
+                    moment([2019, 0, 15, 21, 0]),
+                    moment([2019, 0, 16, 1, 0]),
+                    moment([2019, 0, 16, 5, 0]),
+                    moment([2019, 0, 16, 9, 0]),
+                    moment([2019, 0, 16, 13, 0]),
+                    moment([2019, 0, 16, 17, 0]),
+                    moment([2019, 0, 16, 21, 0]),
+                    moment([2019, 0, 17, 1, 0]),
+                    moment([2019, 0, 17, 5, 0]),
+                    moment([2019, 0, 17, 9, 0]),
+                    moment([2019, 0, 17, 13, 0]),
+                    moment([2019, 0, 17, 17, 0]),
+                    moment([2019, 0, 17, 21, 0]),
+                    moment([2019, 0, 18, 1, 0]),
+                    moment([2019, 0, 18, 5, 0]),
+                    moment([2019, 0, 18, 9, 0]),
+                    moment([2019, 0, 18, 13, 0]),
+                    moment([2019, 0, 18, 17, 0]),
+                    moment([2019, 0, 18, 21, 0]),
+                    moment([2019, 0, 19, 1, 0]),
+                    moment([2019, 0, 19, 5, 0]),
+                    moment([2019, 0, 19, 9, 0])
+                ];
+
+                const actual = bunproPlanner.generateIntervals(startAt);
+                _.zip(actual, expected).forEach((pair) => {
+                    const actualMoment = pair[0];
+                    const expectedMoment = pair[1];
+                    expect(actualMoment).toEqualMoment(expectedMoment);
+                });
+            });
+        });
+
+        describe('when interval is set to 2 hours', () => {
+            beforeEach(() => {
+                bunproPlanner.interval = 2;
+            });
+
+            it('should generate chart intervals for every 2 hours for 24 intervals', () => {
+                const expected = [
+                    moment([2019, 0, 15, 13, 0]),
+                    moment([2019, 0, 15, 15, 0]),
+                    moment([2019, 0, 15, 17, 0]),
+                    moment([2019, 0, 15, 19, 0]),
+                    moment([2019, 0, 15, 21, 0]),
+                    moment([2019, 0, 15, 23, 0]),
+                    moment([2019, 0, 16, 01, 0]),
+                    moment([2019, 0, 16, 03, 0]),
+                    moment([2019, 0, 16, 05, 0]),
+                    moment([2019, 0, 16, 07, 0]),
+                    moment([2019, 0, 16, 09, 0]),
+                    moment([2019, 0, 16, 11, 0]),
+                    moment([2019, 0, 16, 13, 0]),
+                    moment([2019, 0, 16, 15, 0]),
+                    moment([2019, 0, 16, 17, 0]),
+                    moment([2019, 0, 16, 19, 0]),
+                    moment([2019, 0, 16, 21, 0]),
+                    moment([2019, 0, 16, 23, 0]),
+                    moment([2019, 0, 17, 01, 0]),
+                    moment([2019, 0, 17, 03, 0]),
+                    moment([2019, 0, 17, 05, 0]),
+                    moment([2019, 0, 17, 07, 0]),
+                    moment([2019, 0, 17, 09, 0]),
+                    moment([2019, 0, 17, 11, 0])
+                ];
+                const actual = bunproPlanner.generateIntervals(startAt);
+                _.zip(actual, expected).forEach((pair) => {
+                    const actualMoment = pair[0];
+                    const expectedMoment = pair[1];
+                    expect(actualMoment).toEqualMoment(expectedMoment);
+                });
+            });
+        });
+
+        describe('when interval is set to 1 hour', () => {
+            beforeEach(() => {
+                bunproPlanner.interval = 1;
+            });
+
+            it('should generate chart intervals for each hour for 24 intervals', () => {
+                const expected = [
+                    moment([2019, 0, 15, 13, 0]),
+                    moment([2019, 0, 15, 14, 0]),
+                    moment([2019, 0, 15, 15, 0]),
+                    moment([2019, 0, 15, 16, 0]),
+                    moment([2019, 0, 15, 17, 0]),
+                    moment([2019, 0, 15, 18, 0]),
+                    moment([2019, 0, 15, 19, 0]),
+                    moment([2019, 0, 15, 20, 0]),
+                    moment([2019, 0, 15, 21, 0]),
+                    moment([2019, 0, 15, 22, 0]),
+                    moment([2019, 0, 15, 23, 0]),
+                    moment([2019, 0, 16, 0, 0]),
+                    moment([2019, 0, 16, 01, 0]),
+                    moment([2019, 0, 16, 02, 0]),
+                    moment([2019, 0, 16, 03, 0]),
+                    moment([2019, 0, 16, 04, 0]),
+                    moment([2019, 0, 16, 05, 0]),
+                    moment([2019, 0, 16, 06, 0]),
+                    moment([2019, 0, 16, 07, 0]),
+                    moment([2019, 0, 16, 08, 0]),
+                    moment([2019, 0, 16, 09, 0]),
+                    moment([2019, 0, 16, 10, 0]),
+                    moment([2019, 0, 16, 11, 0]),
+                    moment([2019, 0, 16, 12, 0])
+                ];
+                const actual = bunproPlanner.generateIntervals(startAt);
+                _.zip(actual, expected).forEach((pair) => {
+                    const actualMoment = pair[0];
+                    const expectedMoment = pair[1];
+                    expect(actualMoment).toEqualMoment(expectedMoment);
+                });
+            });
+        });
+
+        describe('when interval is set to 0.5 hours', () => {
+            beforeEach(() => {
+                bunproPlanner.interval = 0.5;
+            });
+
+            it('should generate chart intervals for each half hour for 24 intervals', () => {
+                const expected = [
+                    moment([2019, 0, 15, 13, 0]), 
+                    moment([2019, 0, 15, 13, 30]),
+                    moment([2019, 0, 15, 14, 0]), 
+                    moment([2019, 0, 15, 14, 30]),
+                    moment([2019, 0, 15, 15, 0]), 
+                    moment([2019, 0, 15, 15, 30]),
+                    moment([2019, 0, 15, 16, 0]), 
+                    moment([2019, 0, 15, 16, 30]),
+                    moment([2019, 0, 15, 17, 0]), 
+                    moment([2019, 0, 15, 17, 30]),
+                    moment([2019, 0, 15, 18, 0]), 
+                    moment([2019, 0, 15, 18, 30]),
+                    moment([2019, 0, 15, 19, 0]), 
+                    moment([2019, 0, 15, 19, 30]),
+                    moment([2019, 0, 15, 20, 0]), 
+                    moment([2019, 0, 15, 20, 30]),
+                    moment([2019, 0, 15, 21, 0]), 
+                    moment([2019, 0, 15, 21, 30]),
+                    moment([2019, 0, 15, 22, 0]), 
+                    moment([2019, 0, 15, 22, 30]),
+                    moment([2019, 0, 15, 23, 0]), 
+                    moment([2019, 0, 15, 23, 30]),
+                    moment([2019, 0, 16, 0, 0]), 
+                    moment([2019, 0, 16, 0, 30])
+                ];
+                const actual = bunproPlanner.generateIntervals(startAt);
+                _.zip(actual, expected).forEach((pair) => {
+                    const actualMoment = pair[0];
+                    const expectedMoment = pair[1];
+                    expect(actualMoment).toEqualMoment(expectedMoment);
+                });
+            });
+        });
+
+        describe('when interval is set to 0.25 hours', () => {
+            beforeEach(() => {
+                bunproPlanner.interval = 0.25;
+            });
+
+            it('should generate chart intervals for each quarter hour for 24 intervals', () => {
+                const expected = [
+                    moment([2019, 0, 15, 13, 0]), 
+                    moment([2019, 0, 15, 13, 15]), 
+                    moment([2019, 0, 15, 13, 30]), 
+                    moment([2019, 0, 15, 13, 45]),
+                    moment([2019, 0, 15, 14, 0]), 
+                    moment([2019, 0, 15, 14, 15]), 
+                    moment([2019, 0, 15, 14, 30]), 
+                    moment([2019, 0, 15, 14, 45]),
+                    moment([2019, 0, 15, 15, 0]), 
+                    moment([2019, 0, 15, 15, 15]), 
+                    moment([2019, 0, 15, 15, 30]), 
+                    moment([2019, 0, 15, 15, 45]),
+                    moment([2019, 0, 15, 16, 0]), 
+                    moment([2019, 0, 15, 16, 15]), 
+                    moment([2019, 0, 15, 16, 30]), 
+                    moment([2019, 0, 15, 16, 45]),
+                    moment([2019, 0, 15, 17, 0]), 
+                    moment([2019, 0, 15, 17, 15]), 
+                    moment([2019, 0, 15, 17, 30]), 
+                    moment([2019, 0, 15, 17, 45]),
+                    moment([2019, 0, 15, 18, 0]), 
+                    moment([2019, 0, 15, 18, 15]), 
+                    moment([2019, 0, 15, 18, 30]), 
+                    moment([2019, 0, 15, 18, 45])
+                ];
+                const actual = bunproPlanner.generateIntervals(startAt);
+                _.zip(actual, expected).forEach((pair) => {
+                    const actualMoment = pair[0];
+                    const expectedMoment = pair[1];
+                    expect(actualMoment).toEqualMoment(expectedMoment);
+                });
+            });
         });
     });
 
-    describe('generateChartLabels', function () {
-        it('should generate chart labels for each hour for the next 24 hours', function () {
-            spyOn(bunproPlanner, 'getCurrentHour').and.returnValue(13);
-            const expected = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-            const actual = bunproPlanner.generateChartLabels();
-            expect(expected).toEqual(actual);
-        });
-    });
+    describe('getReviewsPerInterval',  () => {
+        it('should get the number of reviews per interval',  () => {
+            const now = moment();
 
-    describe('getReviewsPerHour', function () {
-        it('should get the number of reviews per hour for the next 24 hours', function () {
             const reviews = [
                 { timesCorrect: 0, nextReview: moment().format() },
                 { timesCorrect: 0, nextReview: moment().add(2, 'hours').format() },
@@ -107,37 +329,41 @@ describe('bunpro-planner', function () {
                 { timesCorrect: 10, nextReview: moment().add(20, 'years').format() }
             ];
 
-            const labels = bunproPlanner.generateChartLabels();
+            const intervals = bunproPlanner.generateIntervals(now);
             
             // The index is not the hour, but the matching
             // position to the label for that hour.
-            const expected = labels.map(h => 0);
+            const expected = intervals.map(h => 0);
             expected[0] = 1;
             expected[2] = 2;
             expected[10] = 1;
 
-            const actual = bunproPlanner.getReviewsPerHour(reviews, labels);
+            bunproPlanner.reviews = reviews;
+            const actual = bunproPlanner.getReviewsPerInterval(intervals);
 
             expect(actual).toEqual(expected);
         });
     });
 
-    describe('getAccumulatedReviewsPerHour', function () {
-        it('should accumulate the number of reviews up until each hour if not done', function () {
+    describe('getAccumulatedReviewsPerHour',  () => {
+        it('should accumulate the number of reviews up until each hour if not done',  () => {
             const reviews = [1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             
             const expected = [1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4];            
-            const actual = bunproPlanner.getAccumulatedReviewsPerHour(reviews);
+            const actual = bunproPlanner.getAccumulatedReviewsPerInterval(reviews);
 
             expect(actual).toEqual(expected);
         });
     });
 
-    describe('buildChart', function () {
-        it('should build a chart to visualize review scheduling', function () {
+    describe('buildChart',  () => {
+        it('should build a chart to visualize review scheduling',  () => {
+            const now = moment();
             spyOn(window, 'Chart');
 
             const chart = $('<canvas id="bunpro-planner-chart"></canvas>');
+            bunproPlanner.chart = chart;
+            
             const reviews = [
                 { timesCorrect: 0, nextReview: moment().format() },
                 { timesCorrect: 0, nextReview: moment().add(2, 'hours').format() },
@@ -147,11 +373,18 @@ describe('bunpro-planner', function () {
                 { timesCorrect: 10, nextReview: moment().add(1, 'month').format() },
                 { timesCorrect: 10, nextReview: moment().add(20, 'years').format() }
             ];
-            const labels = bunproPlanner.generateChartLabels();
-            const reviewsPerHour = bunproPlanner.getReviewsPerHour(reviews, labels);
-            const accumulatedReviewsPerHour = bunproPlanner.getAccumulatedReviewsPerHour(reviewsPerHour);
 
-            bunproPlanner.buildChart(chart, reviews);
+            bunproPlanner.reviews = reviews;
+
+            const intervals = bunproPlanner.generateIntervals(now);
+            const reviewsPerHour = bunproPlanner.getReviewsPerInterval(intervals);
+            const accumulatedReviewsPerHour = bunproPlanner.getAccumulatedReviewsPerInterval(reviewsPerHour);
+
+            const labels = intervals.map((interval) => {
+                return interval.format('MM/DD HH:mm');
+            });    
+
+            bunproPlanner.buildChart();
             
             const dataObj = Chart.calls.argsFor(0)[1];
             expect(dataObj.type).toEqual('bar');
