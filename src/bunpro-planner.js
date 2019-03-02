@@ -106,7 +106,7 @@ const BunproPlanner = function () {
     
         // Filter for cards scheduled outside the displayed range.
         let filteredReviews = this.reviews.filter(function (card) {
-            return moment(card.nextReview).diff(now, 'hours') <= maxDiff;
+            return moment(card.nextReview).diff(now, 'hours') < maxDiff;
         });
 
         let groups = _.groupBy(filteredReviews, (card) => {
