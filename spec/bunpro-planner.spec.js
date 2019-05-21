@@ -89,10 +89,9 @@ describe('bunpro-planner', () => {
 
             bunproPlanner.insertChartNode();
 
-            const upcomingGrammarButton = $('.show-upcoming-grammar').first();
-            const containerNode = upcomingGrammarButton.first().prev();
-            const intervalNode = containerNode.children().first();
-            const chartNode = intervalNode.next();
+            const containerNode = $('#bunpro-planner-chart-container').first();
+            const intervalNode = $('#bunpro-planner-interval').first();
+            const chartNode = $('#bunpro-planner-chart').first();
 
             expect(containerNode.attr('id')).toEqual('bunpro-planner-chart-container');
             expect(intervalNode.attr('id')).toEqual('bunpro-planner-interval');
