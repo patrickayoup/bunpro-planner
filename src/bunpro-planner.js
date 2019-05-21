@@ -62,14 +62,16 @@ const BunproPlanner = function () {
         
         let container = jQuery('<div id="bunpro-planner-chart-container"></div>');
         let intervalSelector = jQuery(`
-            <select id="bunpro-planner-interval">
-                <option value="8">8 Hours</option>
-                <option value="4">4 Hours</option>
-                <option value="2">2 Hours</option>
-                <option value="1">1 Hour</option>
-                <option value="0.5">30 Minutes</option>
-                <option value="0.25">15 Minutes</option>
-            </select>
+            <form id="bunpro-planner-form" class="edit_user">
+                <select id="bunpro-planner-interval">
+                    <option value="8">8 Hours</option>
+                    <option value="4">4 Hours</option>
+                    <option value="2">2 Hours</option>
+                    <option value="1">1 Hour</option>
+                    <option value="0.5">30 Minutes</option>
+                    <option value="0.25">15 Minutes</option>
+                </select>
+            </form>
         `);
 
         intervalSelector.change(function () {
